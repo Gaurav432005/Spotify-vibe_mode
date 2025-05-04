@@ -1,0 +1,1626 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <meta name="description" content="Experience music like never before with VibeMode - featuring immersive 8D audio, driving mode, and night ambience in our enhanced Spotify player."/>
+  <meta name="keywords" content="music player, spotify, vibe mode, 8D audio, immersive audio, music experience"/>
+  <meta name="author" content="Spotify VibeMode"/>
+  <meta property="og:title" content="Spotify Player with VibeMode - Enhanced Music Experience"/>
+  <meta property="og:description" content="Transform your listening experience with VibeMode - 8D audio, driving mode, and night ambience in our enhanced Spotify player."/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:image" content="https://i.imgur.com/3gNw3YA.jpeg"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="Spotify Player with VibeMode - Enhanced Music Experience"/>
+  <meta name="twitter:description" content="Transform your listening experience with VibeMode - featuring immersive 8D audio, driving mode, and night ambience."/>
+  <title>Spotify Player with VibeMode</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&display=swap');
+    
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      background: #000;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+  
+  .audio-player{
+    margin-top: 10vh;
+    min-width: 100vw;
+  }
+
+    header{
+      position: absolute;
+      top: 1rem;
+      left: 0;
+      width: 100%;
+      padding : 0px 20px;
+    }
+  
+    main{
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      background: linear-gradient(135deg, #13455A 0%, #0a2530 100%);
+      border-radius: 1rem;
+      margin: 0px 10px;
+    }
+    
+
+    /* Audio Player Component Styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    
+    /* Vibe Mode Panel Configuration */
+    .vibe-panel {
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+    
+    .vibe-panel.mobile {
+      transform: translateY(100%);
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 80vh;
+      display: none;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .vibe-panel.desktop {
+      transform: translateX(-100%);
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 300px;
+      display: none;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+      box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .vibe-panel.active {
+      transform: translateY(0);
+      display: block !important;
+      animation: slideUpMobile 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .vibe-panel.desktop.active {
+      transform: translateX(0);
+      display: block !important;
+      animation: slideInDesktop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    @keyframes slideUpMobile {
+      0% {
+        transform: translateY(100%);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideInDesktop {
+      0% {
+        transform: translateX(-100%);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease-in-out;
+      z-index: 999;
+    }
+    
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+    
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    
+    /* Fixed Footer Player Controls */
+    .spotify-footer {
+      padding: 0.5rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: linear-gradient(135deg, #13455A 0%, #0a2530 100%);
+    }
+    
+    .progress-bar {
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .progress-bar:hover::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      left: 0;
+      right: 0;
+      background: transparent;
+    }
+    
+    .progress-fill {
+      background: #1DB954;
+      transition: width 0.1s linear;
+    }
+    
+    /* Authentication UI Elements */
+    .auth-button {
+      border-radius: 500px;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 8px 32px;
+      border: 1px solid #878787;
+      transition: all 0.2s ease;
+    }
+    
+    .auth-button.signup {
+      background-color: #000;
+      color: #fff;
+    }
+    
+    .auth-button.login {
+      background-color: #fff;
+      color: #000;
+    }
+    
+    .auth-button:hover {
+      transform: scale(1.04);
+    }
+    
+    /* Responsive Layout Configuration */
+    @media (min-width: 768px) {
+      .mobile-only {
+        display: none !important;
+      }
+      
+      .desktop-only {
+        display: flex;
+      }
+      
+      .vibe-panel.mobile {
+        display: none;
+      }
+      
+      .vibe-panel.desktop {
+        display: none;
+      }
+      
+      .footer-hidden-mobile {
+        display: flex;
+      }
+      
+      .desktop-header {
+        display: flex;
+        
+      }
+      
+      .spotify-footer {
+        padding: 1rem;
+        height: 6rem; /* Increased footer height for desktop */
+        background: #000; /* Black background for footer in desktop */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+      }
+      
+      .spotify-top-bar {
+        display: flex !important;
+      }
+      
+      
+    }
+    
+    @media (max-width: 767px) {
+      .desktop-only {
+        display: none !important;
+      }
+      
+      .mobile-only {
+        display: block;
+      }
+
+      body {
+        background: linear-gradient(135deg, #13455A 0%, #0a2530 100%);
+      }
+      
+      .vibe-panel.desktop {
+        display: none;
+      }
+      
+      .vibe-panel.mobile {
+        display: none;
+      }
+      
+      .spotify-footer {
+        padding: 0.5rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: linear-gradient(135deg, #13455A 0%, #0a2530 100%);
+      }
+      
+      .footer-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .footer-hidden-mobile {
+        display: none !important;
+      }
+      
+      .desktop-header {
+        display: none !important;
+        
+      }
+      
+      .spotify-top-bar {
+        display: none !important;
+      }
+      
+      
+      
+      .auth-buttons-mobile {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 12px;
+        margin-right: 12px;
+      }
+      
+      /* Optimize touch targets for mobile accessibility */
+      button, .vibe-option {
+        min-height: 44px;
+        min-width: 44px;
+      }
+    }
+    
+    .vibe-mode {
+      position: relative;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+    
+    .vibe-mode:hover {
+      transform: scale(1.1);
+    }
+    
+    .vibe-option {
+      transition: all 0.3s;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .vibe-option:last-child {
+      margin-bottom: 0;
+    }
+    
+    .vibe-option:hover {
+      transform: translateX(4px);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .vibe-option.active {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .mode-icon {
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .mode-icon.active {
+      transform: scale(1.2);
+      color: #4ade80;
+    }
+    
+    /* Voice Recognition Implementation */
+    .voice-control-button {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    
+    .voice-control-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+    
+    .voice-control-button.listening {
+      background: rgba(29, 185, 84, 0.2);
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(29, 185, 84, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(29, 185, 84, 0);
+      }
+    }
+    
+    .voice-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+    
+    .voice-control-button:hover .voice-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .voice-commands {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 200px;
+      background: rgba(25, 25, 25, 0.95);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    
+    .voice-commands.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .voice-commands h4 {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    
+    .voice-command-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 12px;
+    }
+    
+    .command-name {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Desktop Album View Animation */
+    .desktop-album-view {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .desktop-album-view.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .spotify-top-bar {
+      background-color: #000;
+      padding: 16px 24px;
+    }
+    
+    .search-input {
+      background-color: #242424;
+      color: white;
+      border: none;
+      font-size: 14px;
+      padding: 6px 36px;
+      border-radius: 20px;
+      width: 100%;
+    }
+    
+    .search-input::placeholder {
+      color: #a7a7a7;
+    }
+    
+    .search-wrapper {
+      position: relative;
+      max-width: 400px;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #a7a7a7;
+    }
+    
+    /* Application Loading State */
+    .loading-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+      transition: opacity 0.5s ease;
+    }
+    
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-left-color: #1DB954;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Touch Device Optimizations */
+    @media (pointer: coarse) {
+      /* Enhanced touch targets for better accessibility */
+      .vibe-option, 
+      button[aria-label],
+      .progress-bar {
+        cursor: pointer;
+      }
+      
+      input[type="range"] {
+        height: 6px;
+      }
+      
+      input[type="range"]::-webkit-slider-thumb {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Loading Indicator -->
+  <div id="loading-indicator" class="loading-indicator">
+    <div class="loading-spinner"></div>
+    <p>Loading your experience...</p>
+  </div>
+
+  <!-- Top Spotify-like Navigation Bar -->
+  <div class="spotify-top-bar flex items-center justify-between mb-2">
+    <div class="flex items-center space-x-4">
+      <div class="flex space-x-2">
+        <button class="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white opacity-70">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white opacity-70">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <button class="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white ml-2 hidden md:flex">
+          <i class="fas fa-home"></i>
+        </button>
+      </div>
+      <div class="search-wrapper hidden md:block">
+        <span class="search-icon">
+          <i class="fas fa-search text-sm"></i>
+        </span>
+        <input type="text" placeholder="What do you want to play?" class="search-input">
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button class="bg-white text-black px-4 py-1 rounded-full text-sm font-bold hidden md:block">
+        Explore Premium
+      </button>
+      <button class="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white ml-2">
+        <i class="fas fa-bell"></i>
+      </button>
+      <div class="hidden md:flex items-center space-x-2">
+        <a href="#" class="auth-button signup">Sign up</a>
+        <a href="#" class="auth-button login">Log in</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content - Audio Player -->
+  <main class="flex-grow flex flex-col p-4">
+    <!-- Desktop Header - Moved inside main -->
+    <header class="desktop-header flex justify-between items-center px-10 py-3 mb-4">
+      <div>
+        <h1 class="text-white font-bold text-lg select-none">
+        Apna Bna Le
+        </h1>
+      </div>
+      <div class="flex items-center space-x-6 text-white text-lg opacity-50">
+        <button aria-label="Location" class="hover:opacity-100">
+          <i class="fas fa-map-marker-alt"></i>
+        </button>
+        <button aria-label="Video" class="hover:opacity-100">
+          <i class="fas fa-video"></i>
+        </button>
+        <button aria-label="People" class="hover:opacity-100">
+          <i class="fas fa-user-friends"></i>
+        </button>
+        <button aria-label="More options" class="hover:opacity-100">
+          <i class="fas fa-ellipsis-h"></i>
+        </button>
+        <button aria-label="Fullscreen" class="hover:opacity-100">
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="flex items-center justify-center">
+      <div class="audio-player w-full max-w-sm p-6 block mobile-only">
+        <header class="flex items-center justify-between text-white text-sm font-semibold mb-4">
+          <button aria-label="Back" class="flex items-center hover:opacity-80">
+            <i class="fas fa-chevron-down text-white text-lg"></i>
+          </button>
+          <h1 class="text-center flex-grow font-semibold text-white text-base">
+            Apna Bna Le
+          </h1>
+          <button aria-label="More options" class="text-white text-2xl leading-none hover:opacity-80">
+            ...
+          </button>
+        </header>
+        <img alt="Album Cover - Spotify VibeMode" class="w-full rounded-md mb-4 shadow-lg transform hover:scale-[1.02] transition-transform" src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'"/>
+        <div class="flex items-center justify-between mb-2">
+          <div>
+          
+          </div>
+          <div class="flex items-center space-x-4">
+            <button id="vibe-mode" class="vibe-mode text-gray-400 hover:text-white">
+              <i class="fas fa-wave-square text-xl mode-icon"></i>
+            </button>
+            <button aria-label="Favorite" class="text-gray-400 hover:text-white">
+              <i class="far fa-heart text-xl"></i>
+            </button>
+          </div>
+        </div>
+        <div class="relative mb-2">
+          <input type="range" id="progress" class="w-full cursor-pointer" min="0" max="100" value="0">
+        </div>
+        <div class="flex justify-between text-xs text-gray-300 mb-6">
+          <span id="current-time">0:00</span>
+          <span id="duration">0:00</span>
+        </div>
+        <div class="flex items-center justify-between text-gray-400 text-2xl">
+          <button aria-label="Shuffle" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+            <i class="fas fa-random"></i>
+          </button>
+          <button aria-label="Previous" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+            <i class="fas fa-step-backward"></i>
+          </button>
+          <button id="play-pause" class="bg-white text-[#455055] rounded-full w-14 h-14 flex items-center justify-center shadow-md hover:scale-105 transition-transform">
+            <i class="fas fa-play text-2xl"></i>
+          </button>
+          <button aria-label="Next" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+            <i class="fas fa-step-forward"></i>
+          </button>
+          <button aria-label="Queue" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+            <i class="fas fa-list"></i>
+          </button>
+        </div>
+        <button aria-label="Share" class="text-gray-400 text-xl mt-6 ml-auto block hover:text-white transition-colors">
+          <i class="fas fa-share-alt"></i>
+        </button>
+        <audio id="audio" src="music.mp3" preload="metadata"></audio>
+      </div>
+
+      <!-- Desktop Album View - Updated to be hidden by default -->
+      <div class="desktop-only flex flex-col items-center justify-center desktop-album-view">
+        <div class="rounded-xl overflow-hidden w-80 h-80 shadow-lg">
+          <img alt="Album cover - Spotify VibeMode" class="w-80 h-80 object-cover" 
+               src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'"/>
+        </div>
+        <div class="text-white text-center mt-6">
+         
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Spotify-like Footer -->
+  <footer class="spotify-footer text-white flex items-center px-3 py-4 select-none footer-hidden-mobile">
+    <div class="flex items-center space-x-3 flex-shrink-0 md:w-1/4 w-1/3">
+      <img alt="Spotify VibeMode album thumbnail" class="w-12 h-12 rounded-sm" src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'"/>
+      <div class="flex flex-col leading-tight min-w-0 hidden sm:block">
+        <span class="font-bold text-sm truncate">Apna Bna Le</span>
+      
+      </div>
+      <button aria-label="Favorite" class="text-gray-400 hover:text-white hidden sm:block">
+        <i class="far fa-heart"></i>
+      </button>
+    </div>
+    
+    <div class="flex flex-col items-center flex-grow px-4 max-w-2xl">
+      <div class="flex items-center space-x-3 md:space-x-6 mb-2">
+        <button aria-label="Shuffle" class="text-gray-400 hover:text-white text-sm hidden sm:block">
+          <i class="fas fa-random"></i>
+        </button>
+        <button aria-label="Previous" class="text-gray-400 hover:text-white">
+          <i class="fas fa-step-backward"></i>
+        </button>
+        <button id="footer-play-pause" class="bg-white text-black rounded-full w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform">
+          <i class="fas fa-play text-xs"></i>
+        </button>
+        <button aria-label="Next" class="text-gray-400 hover:text-white">
+          <i class="fas fa-step-forward"></i>
+        </button>
+        <button aria-label="Repeat" class="text-gray-400 hover:text-white text-sm hidden sm:block">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+      <div class="w-full flex items-center space-x-2">
+        <span class="text-xs text-gray-400 hidden sm:inline" id="footer-current-time">0:00</span>
+        <div class="progress-bar flex-grow h-1 rounded-full overflow-hidden relative cursor-pointer">
+          <div id="footer-progress-fill" class="progress-fill h-full rounded-full" style="width: 0%"></div>
+        </div>
+        <span class="text-xs text-gray-400 hidden sm:inline" id="footer-duration">0:00</span>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-4 text-white opacity-70 md:w-1/4 w-1/3 justify-end">
+      <div class="voice-control-button cursor-pointer" id="voice-control" onclick="togglePlayPause()">
+        <i class="fas fa-microphone"></i>
+      </div>
+      <button id="desktop-vibe-mode" class="vibe-mode hover:opacity-100">
+        <i class="fas fa-wave-square text-green-500 text-xl mode-icon"></i>
+      </button>
+      <button aria-label="Volume" class="hover:opacity-100">
+        <i class="fas fa-volume-up"></i>
+      </button>
+      <input aria-label="Volume slider" class="w-12 md:w-20 h-1 rounded-lg cursor-pointer accent-white hidden sm:block" max="100" min="0" type="range" value="50"/>
+    </div>
+  </footer>
+
+  <!-- Overlay for click outside -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Mobile Vibe Mode Panel -->
+  <div id="vibe-panel-mobile" class="vibe-panel mobile rounded-t-2xl p-6 overflow-y-auto">
+    <div class="drag-handle w-12 h-1 bg-gray-500 rounded-full mx-auto mb-4 opacity-50"></div>
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-white text-lg font-semibold">Vibe Mode</h3>
+      <button id="close-vibe-mobile" class="text-gray-400 hover:text-white transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    <div class="vibe-container flex flex-col space-y-2">
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="normal" data-icon="fa-music">
+        <div class="flex items-center">
+          <i class="fas fa-music text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Normal</h4>
+            <p class="text-sm text-gray-400">Original Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="8d" data-icon="fa-headphones">
+        <div class="flex items-center">
+          <i class="fas fa-headphones text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">8D</h4>
+            <p class="text-sm text-gray-400">Immersive 8D Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="driving" data-icon="fa-car">
+        <div class="flex items-center">
+          <i class="fas fa-car text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Driving</h4>
+            <p class="text-sm text-gray-400">Feel the Road</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="night" data-icon="fa-moon">
+        <div class="flex items-center">
+          <i class="fas fa-moon text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Night Ambience</h4>
+            <p class="text-sm text-gray-400">Fresh, Calm Night</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Vibe Mode Panel -->
+  <div id="vibe-panel-desktop" class="vibe-panel desktop p-6 overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-white text-lg font-semibold">Vibe Mode</h3>
+      <button id="close-vibe-desktop" class="text-gray-400 hover:text-white transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    <div class="vibe-container flex flex-col space-y-2">
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="normal" data-icon="fa-music">
+        <div class="flex items-center">
+          <i class="fas fa-music text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Normal</h4>
+            <p class="text-sm text-gray-400">Original Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="8d" data-icon="fa-headphones">
+        <div class="flex items-center">
+          <i class="fas fa-headphones text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">8D</h4>
+            <p class="text-sm text-gray-400">Immersive 8D Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="driving" data-icon="fa-car">
+        <div class="flex items-center">
+          <i class="fas fa-car text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Driving</h4>
+            <p class="text-sm text-gray-400">Feel the Road</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="night" data-icon="fa-moon">
+        <div class="flex items-center">
+          <i class="fas fa-moon text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Night Ambience</h4>
+            <p class="text-sm text-gray-400">Fresh, Calm Night</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const playPauseBtn = document.getElementById('play-pause');
+    const desktopPlayPauseBtn = document.getElementById('footer-play-pause');
+    const progress = document.getElementById('progress');
+    const currentTimeEl = document.getElementById('current-time');
+    const durationEl = document.getElementById('duration');
+    const footerProgressFill = document.getElementById('footer-progress-fill');
+    const footerCurrentTime = document.getElementById('footer-current-time');
+    const footerDuration = document.getElementById('footer-duration');
+    const vibeModeBtn = document.getElementById('vibe-mode');
+    const desktopVibeModeBtn = document.getElementById('desktop-vibe-mode');
+    const overlay = document.getElementById('overlay');
+    const vibePanelMobile = document.getElementById('vibe-panel-mobile');
+    const vibePanelDesktop = document.getElementById('vibe-panel-desktop');
+    const closeVibeMobile = document.getElementById('close-vibe-mobile');
+    const closeVibeDesktop = document.getElementById('close-vibe-desktop');
+    const vibeOptions = document.querySelectorAll('.vibe-option');
+    const vibeContainer = document.querySelector('.vibe-container');
+    const modeIcons = document.querySelectorAll('.mode-icon');
+    const desktopAlbumView = document.querySelector('.desktop-album-view');
+    const voiceControlBtn = document.getElementById('voice-control');
+    
+    // Load audio source properly (check if it exists)
+    if (audio) {
+      // Provide a fallback audio source if needed
+      if (!audio.src || audio.src === '' || audio.src === document.location.href) {
+        audio.src = 'https://storage.googleapis.com/a1aa/audio/c0f7b72e-f4e1-489e-78eb-56dca7f048b1.mp3';
+      }
+      
+      // Add load error handler
+      audio.addEventListener('error', function(e) {
+        console.error('Audio error:', e);
+        if (e.target.error && (e.target.error.code === e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED || 
+            e.target.error.code === e.target.error.MEDIA_ERR_NETWORK)) {
+          // Try alternative sources if main source fails
+          const fallbackSources = [
+            'https://storage.googleapis.com/a1aa/audio/c0f7b72e-f4e1-489e-78eb-56dca7f048b1.mp3',
+            'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+          ];
+          
+          // Try a different source than the current one
+          const currentIndex = fallbackSources.indexOf(audio.src);
+          const nextIndex = (currentIndex + 1) % fallbackSources.length;
+          audio.src = fallbackSources[nextIndex];
+          console.log('Trying fallback audio source:', audio.src);
+          audio.load();
+        }
+      });
+    } else {
+      console.error('Audio element not found in the document');
+    }
+
+    let currentVibeMode = null;
+    let isDragging = false;
+    let startX;
+    let scrollLeft;
+    let touchStartX;
+    let touchStartY;
+
+    // --- Web Audio API Setup ---
+    let audioContext, sourceNode, currentEffect, pannerInterval, tremoloInterval, tremoloGain;
+
+    function setupAudioContext() {
+      if (!audioContext) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          sourceNode = audioContext.createMediaElementSource(audio);
+          sourceNode.connect(audioContext.destination); // Default connection
+          
+          // Create a test oscillator to check if Web Audio is actually working
+          const testOsc = audioContext.createOscillator();
+          testOsc.connect(audioContext.createGain()); // Don't connect to destination to avoid sound
+          try {
+            testOsc.start(audioContext.currentTime);
+            testOsc.stop(audioContext.currentTime + 0.01);
+            console.log('Web Audio API working properly');
+          } catch(e) {
+            console.warn('Web Audio API partial support:', e);
+          }
+          
+          return true;
+        } catch (e) {
+          console.error('Web Audio API error:', e);
+          // Create a fallback audio experience without effects
+          audioContext = null;
+          sourceNode = null;
+          
+          // Show user notification about limited functionality
+          if (document.querySelectorAll('.vibe-option').length > 0) {
+            document.querySelectorAll('.vibe-option').forEach(option => {
+              if (option.dataset.mode !== 'normal') {
+                option.style.opacity = '0.5';
+                option.style.pointerEvents = 'none';
+              }
+            });
+            // Add notification if not already present
+            if (!document.querySelector('.audio-support-notice')) {
+              const notice = document.createElement('div');
+              notice.className = 'audio-support-notice text-yellow-400 text-xs p-2 text-center';
+              notice.textContent = 'Advanced audio effects not supported in your browser';
+              document.querySelector('.vibe-container')?.prepend(notice);
+            }
+          }
+          return false;
+        }
+      }
+      return audioContext !== null;
+    }
+
+    function disconnectCurrentEffect() {
+      if (!audioContext || !sourceNode) return;
+      
+      try {
+        if (currentEffect) {
+          try { currentEffect.disconnect(); } catch (e) { console.log('Effect disconnect error:', e); }
+          currentEffect = null;
+        }
+        if (pannerInterval) {
+          clearInterval(pannerInterval);
+          pannerInterval = null;
+        }
+        if (tremoloInterval) {
+          clearInterval(tremoloInterval);
+          tremoloInterval = null;
+        }
+        if (tremoloGain) {
+          try { tremoloGain.disconnect(); } catch (e) { console.log('Gain disconnect error:', e); }
+          tremoloGain = null;
+        }
+        
+        try { sourceNode.disconnect(); } catch (e) { console.log('Source disconnect error:', e); }
+        
+        if (sourceNode && audioContext) {
+          try {
+            sourceNode.connect(audioContext.destination);
+          } catch (e) {
+            console.error('Error reconnecting source node:', e);
+          }
+        }
+      } catch (e) {
+        console.error('Error in disconnectCurrentEffect:', e);
+      }
+    }
+
+    function applyVibeEffect(mode) {
+      if (!audio) return;
+      
+      try {
+        if (!setupAudioContext()) {
+          console.log('Audio context setup failed, skipping effects');
+          return;
+        }
+        
+        disconnectCurrentEffect();
+
+        if (mode === '8d') {
+          // 8D: Circular panning (simulate sound moving around your head)
+          const panner = audioContext.createStereoPanner();
+          const gainNode = audioContext.createGain();
+          let t = 0;
+          panner.pan.value = 0;
+          gainNode.gain.value = 1;
+          currentEffect = panner;
+          
+          try {
+            sourceNode.disconnect();
+            sourceNode.connect(panner).connect(gainNode).connect(audioContext.destination);
+
+            pannerInterval = setInterval(() => {
+              t += 0.025;
+              panner.pan.value = Math.sin(t * Math.PI / 3);
+              gainNode.gain.value = 0.85 + 0.15 * Math.cos(t * Math.PI / 3);
+            }, 40);
+          } catch (e) {
+            console.error('Error applying 8D effect:', e);
+            // Fallback to normal audio
+            disconnectCurrentEffect();
+            sourceNode.connect(audioContext.destination);
+          }
+        } else if (mode === 'driving') {
+          // Driving: Enhanced car cabin simulation
+          try {
+            const bandpass = audioContext.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.frequency.value = 600;
+            bandpass.Q.value = 0.5;
+
+            // Add reverb for car cabin space
+            const reverb = audioContext.createConvolver();
+            const reverbGain = audioContext.createGain();
+            reverbGain.gain.value = 0.15;
+
+            // Create engine hum using oscillator
+            const engineOsc = audioContext.createOscillator();
+            engineOsc.type = 'sine';
+            engineOsc.frequency.value = 40;
+            const engineGain = audioContext.createGain();
+            engineGain.gain.value = 0.02;
+
+            // Road vibration tremolo
+            tremoloGain = audioContext.createGain();
+            tremoloGain.gain.value = 1;
+
+            // Connect all nodes
+            currentEffect = bandpass;
+            sourceNode.disconnect();
+            
+            // Main audio path
+            sourceNode.connect(bandpass)
+                      .connect(tremoloGain)
+                      .connect(audioContext.destination);
+            
+            // Parallel reverb path
+            bandpass.connect(reverb)
+                    .connect(reverbGain)
+                    .connect(audioContext.destination);
+
+            // Start engine hum
+            engineOsc.connect(engineGain).connect(audioContext.destination);
+            engineOsc.start();
+
+            // Enhanced road vibration effect
+            let t = 0;
+            tremoloInterval = setInterval(() => {
+              t += 0.015;
+              const baseGain = 0.92;
+              const variation = 0.08;
+              const randomFactor = 0.01 * Math.random();
+              tremoloGain.gain.value = baseGain + variation * Math.sin(t) + randomFactor;
+            }, 40);
+          } catch (e) {
+            console.error('Error applying driving effect:', e);
+            // Fallback to normal audio
+            disconnectCurrentEffect();
+            sourceNode.connect(audioContext.destination);
+          }
+        } else if (mode === 'night') {
+          // Night Ambience: Calm lowpass filter
+          try {
+            const lowpass = audioContext.createBiquadFilter();
+            lowpass.type = 'lowpass';
+            lowpass.frequency.value = 1200;
+            currentEffect = lowpass;
+            sourceNode.disconnect();
+            sourceNode.connect(lowpass).connect(audioContext.destination);
+          } catch (e) {
+            console.error('Error applying night effect:', e);
+            // Fallback to normal audio
+            disconnectCurrentEffect();
+            sourceNode.connect(audioContext.destination);
+          }
+        } else {
+          // Normal: No effect
+          sourceNode.disconnect();
+          sourceNode.connect(audioContext.destination);
+        }
+      } catch (e) {
+        console.error('Error applying vibe effect:', e);
+        // Ensure audio still plays even if effects fail
+        if (sourceNode && audioContext) {
+          try {
+            sourceNode.disconnect();
+            sourceNode.connect(audioContext.destination);
+          } catch (err) {
+            console.error('Failed to reconnect audio after error:', err);
+          }
+        }
+      }
+    }
+
+    // Play/Pause functionality
+    function togglePlayPause() {
+      if (!audio) return;
+      
+      try {
+        if (audioContext && audioContext.state === 'suspended') {
+          audioContext.resume().catch(e => console.error('Failed to resume audio context:', e));
+        }
+        
+        if (audio.paused) {
+          const playPromise = audio.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(_ => {
+              // Playback started successfully
+              updatePlayPauseButtons(false);
+            }).catch(e => {
+              // Auto-play was prevented
+              console.error('Playback failed:', e);
+              updatePlayPauseButtons(true);
+              
+              // Attempt to recover if user interaction is causing issue
+              const recoverPlayback = function() {
+                document.removeEventListener('click', recoverPlayback);
+                togglePlayPause();
+              };
+              document.addEventListener('click', recoverPlayback, { once: true });
+            });
+          }
+        } else {
+          audio.pause();
+          updatePlayPauseButtons(true);
+        }
+      } catch (e) {
+        console.error('Toggle play/pause error:', e);
+        // Reset button state to match actual audio state
+        updatePlayPauseButtons(audio.paused);
+      }
+    }
+    
+    function updatePlayPauseButtons(isPaused) {
+      if (playPauseBtn) {
+        playPauseBtn.innerHTML = isPaused ? 
+          '<i class="fas fa-play text-2xl"></i>' : 
+          '<i class="fas fa-pause text-2xl"></i>';
+      }
+      
+      if (desktopPlayPauseBtn) {
+        desktopPlayPauseBtn.innerHTML = isPaused ? 
+          '<i class="fas fa-play text-xs"></i>' : 
+          '<i class="fas fa-pause text-xs"></i>';
+      }
+    }
+
+    // Event listeners (check if elements exist first)
+    if (playPauseBtn) {
+      playPauseBtn.addEventListener('click', togglePlayPause);
+    }
+    
+    if (desktopPlayPauseBtn) {
+      desktopPlayPauseBtn.addEventListener('click', togglePlayPause);
+    }
+
+    // Update progress bars
+    if (audio) {
+      audio.addEventListener('timeupdate', () => {
+        try {
+          const percent = (audio.currentTime / audio.duration) * 100 || 0;
+          
+          if (progress) progress.value = percent;
+          if (currentTimeEl) currentTimeEl.textContent = formatTime(audio.currentTime);
+          if (footerCurrentTime) footerCurrentTime.textContent = formatTime(audio.currentTime);
+          if (footerProgressFill) footerProgressFill.style.width = `${percent}%`;
+        } catch (e) {
+          console.error('Progress update error:', e);
+        }
+      });
+
+      // Update duration
+      audio.addEventListener('loadedmetadata', () => {
+        try {
+          if (durationEl) durationEl.textContent = formatTime(audio.duration);
+          if (footerDuration) footerDuration.textContent = formatTime(audio.duration);
+        } catch (e) {
+          console.error('Duration update error:', e);
+        }
+      });
+      
+      // Handle errors
+      audio.addEventListener('error', (e) => {
+        console.error('Audio error:', e);
+        alert('There was an error playing the audio file. Please try again later.');
+      });
+    }
+
+    // Seek functionality
+    if (progress) {
+      progress.addEventListener('input', () => {
+        try {
+          if (!audio || isNaN(audio.duration)) return;
+          const seekTime = (progress.value / 100) * audio.duration;
+          audio.currentTime = seekTime;
+        } catch (e) {
+          console.error('Seek error:', e);
+        }
+      });
+    }
+
+    // Seek functionality for desktop progress bar
+    const progressBar = document.querySelector('.progress-bar');
+    if (progressBar) {
+      progressBar.addEventListener('mousemove', (e) => {
+        try {
+          if (e.buttons === 1 && audio && !isNaN(audio.duration)) { 
+            const clickPosition = e.clientX - progressBar.getBoundingClientRect().left;
+            const progressBarWidth = progressBar.clientWidth;
+            const seekPercent = (clickPosition / progressBarWidth) * 100;
+            const seekTime = (seekPercent / 100) * audio.duration;
+            audio.currentTime = seekTime;
+          }
+        } catch (e) {
+          console.error('Progress bar mousemove error:', e);
+        }
+      });
+      
+      progressBar.addEventListener('click', (e) => {
+        try {
+          if (!audio || isNaN(audio.duration)) return;
+          const clickPosition = e.clientX - progressBar.getBoundingClientRect().left;
+          const progressBarWidth = progressBar.clientWidth;
+          const seekPercent = (clickPosition / progressBarWidth) * 100;
+          const seekTime = (seekPercent / 100) * audio.duration;
+          audio.currentTime = seekTime;
+          
+          // Visual feedback
+          if (footerProgressFill) {
+            footerProgressFill.style.width = `${seekPercent}%`;
+          }
+        } catch (e) {
+          console.error('Progress bar click error:', e);
+        }
+      });
+    }
+
+    // Format time
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "0:00";
+      
+      const minutes = Math.floor(seconds / 60);
+      seconds = Math.floor(seconds % 60);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Vibe Mode Panel with animations
+    function openVibePanel() {
+      try {
+        if (window.innerWidth >= 768) {
+          // Reset any animation classes first
+          if (vibePanelDesktop) {
+            vibePanelDesktop.classList.remove('active');
+            // Force reflow so animation can restart
+            void vibePanelDesktop.offsetWidth;
+            // Add active class to trigger animation
+            vibePanelDesktop.classList.add('active');
+          }
+        } else {
+          // Reset any animation classes first
+          if (vibePanelMobile) {
+            vibePanelMobile.classList.remove('active');
+            // Force reflow so animation can restart
+            void vibePanelMobile.offsetWidth;
+            // Add active class to trigger animation
+            vibePanelMobile.classList.add('active');
+          }
+        }
+        
+        // Reset overlay animation
+        if (overlay) {
+          overlay.classList.remove('active');
+          void overlay.offsetWidth;
+          overlay.classList.add('active');
+        }
+        
+        document.body.style.overflow = 'hidden';
+      } catch (e) {
+        console.error('Open vibe panel error:', e);
+      }
+    }
+
+    // Add resize event listener to handle responsive changes
+    window.addEventListener('resize', function() {
+      closeAllPanels();
+    });
+
+    // Update visibility of mode icons for desktop/mobile
+    function updateModeIconsVisibility() {
+      if (!modeIcons || modeIcons.length === 0) return;
+      
+      try {
+        modeIcons.forEach(iconEl => {
+          // Remove any hidden class that might have been added
+          iconEl.classList.remove('hidden');
+        });
+      } catch (e) {
+        console.error('Mode icons visibility update error:', e);
+      }
+    }
+
+    // Call once on page load
+    updateModeIconsVisibility();
+
+    // Add vibe mode button listeners if elements exist
+    if (vibeModeBtn) {
+      vibeModeBtn.addEventListener('click', (e) => {
+        try {
+          openVibePanel();
+          e.stopPropagation();
+        } catch (e) {
+          console.error('Vibe mode button click error:', e);
+        }
+      });
+    }
+
+    if (desktopVibeModeBtn) {
+      desktopVibeModeBtn.addEventListener('click', (e) => {
+        try {
+          openVibePanel();
+          e.stopPropagation();
+        } catch (e) {
+          console.error('Desktop vibe mode button click error:', e);
+        }
+      });
+    }
+
+    // Close buttons
+    if (closeVibeMobile) {
+      closeVibeMobile.addEventListener('click', () => {
+        closeAllPanels();
+      });
+    }
+    
+    if (closeVibeDesktop) {
+      closeVibeDesktop.addEventListener('click', () => {
+        closeAllPanels();
+      });
+    }
+
+    // Click outside to close
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        closeAllPanels();
+      });
+    }
+
+    // Function to close all panels with animation
+    function closeAllPanels() {
+      try {
+        if (vibePanelMobile) vibePanelMobile.classList.remove('active');
+        if (vibePanelDesktop) vibePanelDesktop.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      } catch (e) {
+        console.error('Close panels error:', e);
+      }
+    }
+
+    // Vibe Mode Selection
+    if (vibeOptions && vibeOptions.length > 0) {
+      vibeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          try {
+            const mode = option.dataset.mode;
+            const icon = option.dataset.icon;
+            const wasActive = currentVibeMode === mode;
+
+            // Always play the song when changing mode
+            if (audio && audio.paused) {
+              audio.currentTime = 0;
+              const playPromise = audio.play();
+              
+              if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                  updatePlayPauseButtons(false);
+                }).catch(e => {
+                  console.error('Auto-play prevented:', e);
+                  updatePlayPauseButtons(true);
+                });
+              }
+            }
+
+            // If user taps the same mode again, just close the panel (do not revert to normal)
+            if (wasActive) {
+              closeAllPanels();
+              return;
+            } else {
+              // Deselect previous mode
+              vibeOptions.forEach(opt => opt.classList.remove('active'));
+              // Select new mode
+              currentVibeMode = mode;
+              option.classList.add('active');
+              
+              // Update mobile and desktop vibe mode button states
+              if (vibeModeBtn) vibeModeBtn.classList.add('active');
+              if (desktopVibeModeBtn) desktopVibeModeBtn.classList.add('active');
+              
+              // Update mobile icon
+              const mobileIconEl = vibeModeBtn ? vibeModeBtn.querySelector('.mode-icon') : null;
+              if (mobileIconEl) {
+                if (mode === 'normal') {
+                  mobileIconEl.className = 'fas fa-wave-square text-xl mode-icon';
+                } else {
+                  mobileIconEl.className = `fas ${icon} text-xl mode-icon active`;
+                }
+              }
+              
+              // Update desktop icon
+              const desktopIconEl = desktopVibeModeBtn ? desktopVibeModeBtn.querySelector('.mode-icon') : null;
+              if (desktopIconEl) {
+                if (mode === 'normal') {
+                  desktopIconEl.className = 'fas fa-wave-square text-xl mode-icon';
+                } else {
+                  desktopIconEl.className = `fas ${icon} text-xl mode-icon active`;
+                }
+              }
+              
+              applyVibeEffect(mode);
+            }
+            
+            // Auto-close the panel after selection
+            closeAllPanels();
+          } catch (e) {
+            console.error('Vibe mode selection error:', e);
+          }
+        });
+      });
+    }
+
+    // Initialize audio context on first user interaction
+    document.body.addEventListener('click', () => {
+      try {
+        if (!audioContext && audio) {
+          setupAudioContext();
+          // Also ensure playback is ready after first click
+          if (audio.paused) {
+            // Just load/prepare the audio without playing
+            audio.load();
+          }
+        }
+      } catch (e) {
+        console.error('Audio context initialization error:', e);
+      }
+    }, { once: true });
+
+    // Initialize page with event listeners for controls
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Hide loading indicator
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) {
+          // Give a moment for everything to initialize
+          setTimeout(() => {
+            loadingIndicator.style.opacity = '0';
+            setTimeout(() => {
+              loadingIndicator.style.display = 'none';
+            }, 500);
+          }, 800);
+        }
+      
+        // Add error handlers for images
+        const albumImages = document.querySelectorAll('img[src="image.jpg"]');
+        const fallbackImageUrl = 'https://i.imgur.com/3gNw3YA.jpeg'; // Default fallback image
+        
+        albumImages.forEach(img => {
+          img.onerror = function() {
+            this.src = fallbackImageUrl;
+            console.log('Using fallback image');
+          };
+          
+          // Force reload to check if current src is valid
+          if (!img.complete || img.naturalHeight === 0) {
+            const currentSrc = img.src;
+            img.src = '';
+            img.src = currentSrc;
+          }
+        });
+        
+        // Wait a bit before showing the album view with animation
+        setTimeout(() => {
+          if (desktopAlbumView) {
+            desktopAlbumView.classList.add('show');
+          }
+        }, 500);
+        
+        // Simple click interaction for microphone icon
+        if (voiceControlBtn) {
+          voiceControlBtn.addEventListener('click', function() {
+            try {
+              // Visual feedback
+              this.classList.add('listening');
+              
+              setTimeout(() => {
+                this.classList.remove('listening');
+              }, 1000);
+              
+              // Toggle playback when clicking the mic icon
+              togglePlayPause();
+            } catch (e) {
+              console.error('Voice control button click error:', e);
+            }
+          });
+        }
+        
+        // Ensure all controls are properly initialized
+        if (audio) {
+          // Force update duration if audio is already loaded
+          if (audio.readyState > 0) {
+            if (durationEl) durationEl.textContent = formatTime(audio.duration);
+            if (footerDuration) footerDuration.textContent = formatTime(audio.duration);
+          }
+        }
+      } catch (e) {
+        console.error('DOMContentLoaded error:', e);
+      }
+    });
+
+    // Handle keyboard events for accessibility
+    document.addEventListener('keydown', function(e) {
+      try {
+        // Skip if user is typing in an input field
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+          return;
+        }
+        
+        if (e.key === 'Escape') {
+          closeAllPanels();
+        } else if (e.key === ' ' || e.key === 'k') {
+          // Space or K to toggle play/pause
+          e.preventDefault();
+          togglePlayPause();
+        } else if (e.key === 'ArrowRight') {
+          // Right arrow to seek forward
+          e.preventDefault();
+          if (audio) audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+        } else if (e.key === 'ArrowLeft') {
+          // Left arrow to seek backward
+          e.preventDefault();
+          if (audio) audio.currentTime = Math.max(0, audio.currentTime - 5);
+        } else if (e.key === 'm') {
+          // M to mute/unmute
+          if (audio) audio.muted = !audio.muted;
+        } else if (e.key === 'v') {
+          // V to open vibe panel
+          openVibePanel();
+        }
+      } catch (e) {
+        console.error('Keyboard event error:', e);
+      }
+    });
+    
+    // Fix for iOS Safari audio context issue
+    function unlockAudioContext() {
+      if (audioContext && audioContext.state === 'suspended') {
+        const unlockEvent = ['touchstart', 'touchend', 'mousedown', 'keydown'];
+        const unlock = function() {
+          unlockEvent.forEach(function(e) {
+            document.body.removeEventListener(e, unlock);
+          });
+          
+          // Try to resume the AudioContext
+          audioContext.resume().then(function() {
+            console.log('AudioContext resumed successfully');
+          }).catch(function(error) {
+            console.error('Failed to resume AudioContext:', error);
+          });
+        };
+        
+        unlockEvent.forEach(function(e) {
+          document.body.addEventListener(e, unlock, false);
+        });
+      }
+    }
+    
+    // Call unlock function
+    unlockAudioContext();
+  </script>
+</body>
+</html>
+
