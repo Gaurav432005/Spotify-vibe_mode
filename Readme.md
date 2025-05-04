@@ -33,5 +33,5 @@ JavaScript
 
 Spotify Web API
 
-Audio Filters (Web Audio API)
+Web Audio API – Used to dynamically convert music into immersive experiences like 8D Audio, Driving Mode, and Night Ambience through spatial effects, filters, and real-time audio processing.
 
