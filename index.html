@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Apna Bana Le Player</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&display=swap');
+    
+    body {
+      font-family: 'Inter', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Audio Player Styles */
+    .audio-player {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+    
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    
+    /* Vibe Mode Panel Styles */
+    .vibe-panel {
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+    
+    .vibe-panel.mobile {
+      transform: translateY(100%);
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-height: 80vh;
+      display: none;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .vibe-panel.desktop {
+      transform: translateX(-100%);
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 300px;
+      display: none;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform;
+      box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .vibe-panel.active {
+      transform: translateY(0);
+      display: block !important;
+      animation: slideUpMobile 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .vibe-panel.desktop.active {
+      transform: translateX(0);
+      display: block !important;
+      animation: slideInDesktop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    @keyframes slideUpMobile {
+      0% {
+        transform: translateY(100%);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideInDesktop {
+      0% {
+        transform: translateX(-100%);
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(2px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease-in-out;
+      z-index: 999;
+    }
+    
+    .overlay.active {
+      opacity: 1;
+      visibility: visible;
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+    
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    
+    /* Spotify-like Footer Styles */
+    .spotify-footer {
+      background: linear-gradient(to right, #181818, #282828);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .progress-bar {
+      background: rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+      position: relative;
+    }
+    
+    .progress-bar:hover::before {
+      content: '';
+      position: absolute;
+      top: -6px;
+      bottom: -6px;
+      left: 0;
+      right: 0;
+      background: transparent;
+    }
+    
+    .progress-fill {
+      background: #1DB954;
+      transition: width 0.1s linear;
+    }
+    
+    /* Responsive Adjustments */
+    @media (min-width: 768px) {
+      .mobile-only {
+        display: none !important;
+      }
+      
+      .desktop-only {
+        display: flex;
+      }
+      
+      .vibe-panel.mobile {
+        display: none;
+      }
+      
+      .vibe-panel.desktop {
+        display: none;
+      }
+      
+      .footer-hidden-mobile {
+        display: flex;
+      }
+    }
+    
+    @media (max-width: 767px) {
+      .desktop-only {
+        display: none !important;
+      }
+      
+      .mobile-only {
+        display: block;
+      }
+      
+      .vibe-panel.desktop {
+        display: none;
+      }
+      
+      .vibe-panel.mobile {
+        display: none;
+      }
+      
+      .spotify-footer {
+        padding: 0.5rem;
+      }
+      
+      .footer-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .footer-hidden-mobile {
+        display: none !important;
+      }
+    }
+    
+    .vibe-mode {
+      position: relative;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+    
+    .vibe-mode:hover {
+      transform: scale(1.1);
+    }
+    
+    .vibe-option {
+      transition: all 0.3s;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .vibe-option:last-child {
+      margin-bottom: 0;
+    }
+    
+    .vibe-option:hover {
+      transform: translateX(4px);
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .vibe-option.active {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .mode-icon {
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .mode-icon.active {
+      transform: scale(1.2);
+      color: #4ade80;
+    }
+    
+    /* Voice Control Styles */
+    .voice-control-button {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    
+    .voice-control-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+    
+    .voice-control-button.listening {
+      background: rgba(29, 185, 84, 0.2);
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(29, 185, 84, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(29, 185, 84, 0);
+      }
+    }
+    
+    .voice-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-bottom: 8px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+    
+    .voice-control-button:hover .voice-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .voice-commands {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      width: 200px;
+      background: rgba(25, 25, 25, 0.95);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    
+    .voice-commands.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .voice-commands h4 {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    
+    .voice-command-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      font-size: 12px;
+    }
+    
+    .command-name {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Desktop Album View - Hidden by default */
+    .desktop-album-view {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    
+    .desktop-album-view.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Desktop/Mobile Header -->
+  <header class="flex justify-between items-center px-4 py-3 desktop-only">
+    <div>
+      <h1 class="text-white font-bold text-sm select-none">
+        Apna Bana Le
+      </h1>
+    </div>
+    <div class="flex items-center space-x-4 text-white text-xs opacity-50">
+      <button aria-label="Location" class="hover:opacity-100">
+        <i class="fas fa-map-marker-alt"></i>
+      </button>
+      <button aria-label="Video" class="hover:opacity-100">
+        <i class="fas fa-video"></i>
+      </button>
+      <button aria-label="People" class="hover:opacity-100">
+        <i class="fas fa-user-friends"></i>
+      </button>
+      <button aria-label="More options" class="hover:opacity-100">
+        <i class="fas fa-ellipsis-h"></i>
+      </button>
+      <button aria-label="Fullscreen" class="hover:opacity-100">
+        <i class="fas fa-expand"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Header - Added for mobile view -->
+  <header class="flex justify-between items-center px-4 py-3 mobile-only">
+    <button aria-label="Back" class="text-white">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <h1 class="text-white font-bold text-xs select-none">
+      Now Playing
+    </h1>
+    <button aria-label="More options" class="text-white">
+      <i class="fas fa-ellipsis-h"></i>
+    </button>
+  </header>
+
+  <!-- Main Content - Audio Player -->
+  <main class="flex-grow flex items-center justify-center p-4">
+    <div class="audio-player w-full max-w-sm p-6 block mobile-only">
+      <header class="flex items-center justify-between text-white text-sm font-semibold mb-4">
+        <button aria-label="Back" class="flex items-center hover:opacity-80">
+          <i class="fas fa-chevron-down text-white text-lg"></i>
+        </button>
+        <h1 class="text-center flex-grow font-semibold text-white text-base">
+          Apna Bana Le
+        </h1>
+        <button aria-label="More options" class="text-white text-2xl leading-none hover:opacity-80">
+          ...
+        </button>
+      </header>
+      <img alt="Album Cover" class="w-full rounded-md mb-4 shadow-lg transform hover:scale-[1.02] transition-transform" src="https://storage.googleapis.com/a1aa/image/743b3f4d-9862-44be-7be2-ab2828511d66.jpg"/>
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <h2 class="text-white font-bold text-lg leading-tight">
+            Apna Bana Le
+          </h2>
+        
+        </div>
+        <div class="flex items-center space-x-4">
+          <button id="vibe-mode" class="vibe-mode text-gray-400 hover:text-white">
+            <i class="fas fa-wave-square text-xl mode-icon"></i>
+          </button>
+          <button aria-label="Favorite" class="text-gray-400 hover:text-white">
+            <i class="far fa-heart text-xl"></i>
+          </button>
+        </div>
+      </div>
+      <div class="relative mb-2">
+        <input type="range" id="progress" class="w-full cursor-pointer" min="0" max="100" value="0">
+      </div>
+      <div class="flex justify-between text-xs text-gray-300 mb-6">
+        <span id="current-time">0:00</span>
+        <span id="duration">0:00</span>
+      </div>
+      <div class="flex items-center justify-between text-gray-400 text-2xl">
+        <button aria-label="Shuffle" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+          <i class="fas fa-random"></i>
+        </button>
+        <button aria-label="Previous" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+          <i class="fas fa-step-backward"></i>
+        </button>
+        <button id="play-pause" class="bg-white text-[#455055] rounded-full w-14 h-14 flex items-center justify-center shadow-md hover:scale-105 transition-transform">
+          <i class="fas fa-play text-2xl"></i>
+        </button>
+        <button aria-label="Next" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+          <i class="fas fa-step-forward"></i>
+        </button>
+        <button aria-label="Queue" class="opacity-50 hover:opacity-100 hover:scale-110 transition-transform">
+          <i class="fas fa-list"></i>
+        </button>
+      </div>
+      <button aria-label="Share" class="text-gray-400 text-xl mt-6 ml-auto block hover:text-white transition-colors">
+        <i class="fas fa-share-alt"></i>
+      </button>
+      <audio id="audio" src="music.mp3"></audio>
+    </div>
+
+    <!-- Desktop Album View - Updated to be hidden by default -->
+    <div class="desktop-only flex flex-col items-center justify-center desktop-album-view">
+      <div class="rounded-xl overflow-hidden w-80 h-80 shadow-lg">
+        <img alt="Album cover" class="w-full h-full object-cover" 
+             src="https://storage.googleapis.com/a1aa/image/743b3f4d-9862-44be-7be2-ab2828511d66.jpg"/>
+      </div>
+      <div class="text-white text-center mt-6">
+        <h2 class="font-bold text-2xl">Apna Bana Le</h2>
+       
+      </div>
+    </div>
+  </main>
+
+  <!-- Spotify-like Footer -->
+  <footer class="spotify-footer text-white flex items-center px-3 py-2 select-none footer-hidden-mobile">
+    <div class="flex items-center space-x-3 flex-shrink-0 md:w-1/4 w-1/3">
+      <img alt="Small album cover image" class="w-10 h-10 rounded-sm" src="https://storage.googleapis.com/a1aa/image/f957b628-9a36-48c5-19b1-bed4cc7a7a78.jpg"/>
+      <div class="flex flex-col leading-tight min-w-0 hidden sm:block">
+        <span class="font-bold text-sm truncate">Apna Bana Le</span>
+      
+      </div>
+      <button aria-label="Favorite" class="text-gray-400 hover:text-white hidden sm:block">
+        <i class="far fa-heart"></i>
+      </button>
+    </div>
+    
+    <div class="flex flex-col items-center flex-grow px-4 max-w-2xl">
+      <div class="flex items-center space-x-3 md:space-x-6 mb-2">
+        <button aria-label="Shuffle" class="text-gray-400 hover:text-white text-sm hidden sm:block">
+          <i class="fas fa-random"></i>
+        </button>
+        <button aria-label="Previous" class="text-gray-400 hover:text-white">
+          <i class="fas fa-step-backward"></i>
+        </button>
+        <button id="footer-play-pause" class="bg-white text-black rounded-full w-8 h-8 flex items-center justify-center hover:scale-110 transition-transform">
+          <i class="fas fa-play text-xs"></i>
+        </button>
+        <button aria-label="Next" class="text-gray-400 hover:text-white">
+          <i class="fas fa-step-forward"></i>
+        </button>
+        <button aria-label="Repeat" class="text-gray-400 hover:text-white text-sm hidden sm:block">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+      <div class="w-full flex items-center space-x-2">
+        <span class="text-xs text-gray-400 hidden sm:inline" id="footer-current-time">0:00</span>
+        <div class="progress-bar flex-grow h-1 rounded-full overflow-hidden relative cursor-pointer">
+          <div id="footer-progress-fill" class="progress-fill h-full rounded-full" style="width: 0%"></div>
+        </div>
+        <span class="text-xs text-gray-400 hidden sm:inline" id="footer-duration">0:00</span>
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-2 md:space-x-4 text-white opacity-70 md:w-1/4 w-1/3 justify-end">
+      <div class="voice-control-button cursor-pointer" id="voice-control" onclick="togglePlayPause()">
+        <i class="fas fa-microphone"></i>
+      </div>
+      <button id="desktop-vibe-mode" class="vibe-mode hover:opacity-100">
+        <i class="fas fa-wave-square text-xl mode-icon"></i>
+      </button>
+      <button aria-label="Queue" class="hover:opacity-100 hidden sm:block">
+        <i class="fas fa-list"></i>
+      </button>
+      <button aria-label="Devices" class="hover:opacity-100 hidden sm:block">
+        <i class="fas fa-tv"></i>
+      </button>
+      <button aria-label="Volume" class="hover:opacity-100">
+        <i class="fas fa-volume-up"></i>
+      </button>
+      <input aria-label="Volume slider" class="w-12 md:w-20 h-1 rounded-lg cursor-pointer accent-white hidden sm:block" max="100" min="0" type="range" value="50"/>
+    </div>
+  </footer>
+
+  <!-- Overlay for click outside -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Mobile Vibe Mode Panel -->
+  <div id="vibe-panel-mobile" class="vibe-panel mobile rounded-t-2xl p-6 overflow-y-auto">
+    <div class="drag-handle w-12 h-1 bg-gray-500 rounded-full mx-auto mb-4 opacity-50"></div>
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-white text-lg font-semibold">Vibe Mode</h3>
+      <button id="close-vibe-mobile" class="text-gray-400 hover:text-white transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    <div class="vibe-container flex flex-col space-y-2">
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="normal" data-icon="fa-music">
+        <div class="flex items-center">
+          <i class="fas fa-music text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Normal</h4>
+            <p class="text-sm text-gray-400">Original Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="8d" data-icon="fa-headphones">
+        <div class="flex items-center">
+          <i class="fas fa-headphones text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">8D</h4>
+            <p class="text-sm text-gray-400">Immersive 8D Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="driving" data-icon="fa-car">
+        <div class="flex items-center">
+          <i class="fas fa-car text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Driving</h4>
+            <p class="text-sm text-gray-400">Feel the Road</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="night" data-icon="fa-moon">
+        <div class="flex items-center">
+          <i class="fas fa-moon text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Night Ambience</h4>
+            <p class="text-sm text-gray-400">Fresh, Calm Night</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Vibe Mode Panel -->
+  <div id="vibe-panel-desktop" class="vibe-panel desktop p-6 overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-white text-lg font-semibold">Vibe Mode</h3>
+      <button id="close-vibe-desktop" class="text-gray-400 hover:text-white transition-colors">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    <div class="vibe-container flex flex-col space-y-2">
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="normal" data-icon="fa-music">
+        <div class="flex items-center">
+          <i class="fas fa-music text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Normal</h4>
+            <p class="text-sm text-gray-400">Original Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="8d" data-icon="fa-headphones">
+        <div class="flex items-center">
+          <i class="fas fa-headphones text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">8D</h4>
+            <p class="text-sm text-gray-400">Immersive 8D Audio</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="driving" data-icon="fa-car">
+        <div class="flex items-center">
+          <i class="fas fa-car text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Driving</h4>
+            <p class="text-sm text-gray-400">Feel the Road</p>
+          </div>
+        </div>
+      </div>
+      <div class="vibe-option p-4 text-white cursor-pointer" data-mode="night" data-icon="fa-moon">
+        <div class="flex items-center">
+          <i class="fas fa-moon text-2xl mr-3 mode-icon"></i>
+          <div>
+            <h4 class="font-semibold">Night Ambience</h4>
+            <p class="text-sm text-gray-400">Fresh, Calm Night</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const playPauseBtn = document.getElementById('play-pause');
+    const desktopPlayPauseBtn = document.getElementById('footer-play-pause');
+    const progress = document.getElementById('progress');
+    const currentTimeEl = document.getElementById('current-time');
+    const durationEl = document.getElementById('duration');
+    const footerProgressFill = document.getElementById('footer-progress-fill');
+    const footerCurrentTime = document.getElementById('footer-current-time');
+    const footerDuration = document.getElementById('footer-duration');
+    const vibeModeBtn = document.getElementById('vibe-mode');
+    const desktopVibeModeBtn = document.getElementById('desktop-vibe-mode');
+    const overlay = document.getElementById('overlay');
+    const vibePanelMobile = document.getElementById('vibe-panel-mobile');
+    const vibePanelDesktop = document.getElementById('vibe-panel-desktop');
+    const closeVibeMobile = document.getElementById('close-vibe-mobile');
+    const closeVibeDesktop = document.getElementById('close-vibe-desktop');
+    const vibeOptions = document.querySelectorAll('.vibe-option');
+    const vibeContainer = document.querySelector('.vibe-container');
+    const modeIcons = document.querySelectorAll('.mode-icon');
+    const desktopAlbumView = document.querySelector('.desktop-album-view');
+    const voiceControlBtn = document.getElementById('voice-control');
+    
+    // Load audio source properly (check if it exists)
+    if (audio) {
+      // Provide a fallback audio source if needed
+      if (!audio.src || audio.src === '') {
+        audio.src = 'https://storage.googleapis.com/a1aa/audio/c0f7b72e-f4e1-489e-78eb-56dca7f048b1.mp3';
+      }
+    } else {
+      console.error('Audio element not found in the document');
+    }
+
+    let currentVibeMode = null;
+    let isDragging = false;
+    let startX;
+    let scrollLeft;
+    let touchStartX;
+    let touchStartY;
+
+    // --- Web Audio API Setup ---
+    let audioContext, sourceNode, currentEffect, pannerInterval, tremoloInterval, tremoloGain;
+
+    function setupAudioContext() {
+      if (!audioContext) {
+        try {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          sourceNode = audioContext.createMediaElementSource(audio);
+          sourceNode.connect(audioContext.destination); // Default connection
+        } catch (e) {
+          console.error('Web Audio API error:', e);
+        }
+      }
+    }
+
+    function disconnectCurrentEffect() {
+      if (currentEffect) {
+        try { currentEffect.disconnect(); } catch (e) { console.log('Effect disconnect error:', e); }
+        currentEffect = null;
+      }
+      if (pannerInterval) {
+        clearInterval(pannerInterval);
+        pannerInterval = null;
+      }
+      if (tremoloInterval) {
+        clearInterval(tremoloInterval);
+        tremoloInterval = null;
+      }
+      if (tremoloGain) {
+        try { tremoloGain.disconnect(); } catch (e) { console.log('Gain disconnect error:', e); }
+        tremoloGain = null;
+      }
+      try { sourceNode.disconnect(); } catch (e) { console.log('Source disconnect error:', e); }
+      
+      if (sourceNode && audioContext) {
+        try {
+          sourceNode.connect(audioContext.destination);
+        } catch (e) {
+          console.error('Error reconnecting source node:', e);
+        }
+      }
+    }
+
+    function applyVibeEffect(mode) {
+      if (!audio) return;
+      
+      try {
+        setupAudioContext();
+        disconnectCurrentEffect();
+
+        if (mode === '8d') {
+          // 8D: Circular panning (simulate sound moving around your head)
+          const panner = audioContext.createStereoPanner();
+          const gainNode = audioContext.createGain();
+          let t = 0;
+          panner.pan.value = 0;
+          gainNode.gain.value = 1;
+          currentEffect = panner;
+          sourceNode.disconnect();
+          sourceNode.connect(panner).connect(gainNode).connect(audioContext.destination);
+
+          pannerInterval = setInterval(() => {
+            t += 0.025;
+            panner.pan.value = Math.sin(t * Math.PI / 3);
+            gainNode.gain.value = 0.85 + 0.15 * Math.cos(t * Math.PI / 3);
+          }, 40);
+        } else if (mode === 'driving') {
+          // Driving: Enhanced car cabin simulation
+          const bandpass = audioContext.createBiquadFilter();
+          bandpass.type = 'bandpass';
+          bandpass.frequency.value = 600;
+          bandpass.Q.value = 0.5;
+
+          // Add reverb for car cabin space
+          const reverb = audioContext.createConvolver();
+          const reverbGain = audioContext.createGain();
+          reverbGain.gain.value = 0.15;
+
+          // Create engine hum using oscillator
+          const engineOsc = audioContext.createOscillator();
+          engineOsc.type = 'sine';
+          engineOsc.frequency.value = 40;
+          const engineGain = audioContext.createGain();
+          engineGain.gain.value = 0.02;
+
+          // Road vibration tremolo
+          tremoloGain = audioContext.createGain();
+          tremoloGain.gain.value = 1;
+
+          // Connect all nodes
+          currentEffect = bandpass;
+          sourceNode.disconnect();
+          
+          // Main audio path
+          sourceNode.connect(bandpass)
+                    .connect(tremoloGain)
+                    .connect(audioContext.destination);
+          
+          // Parallel reverb path
+          bandpass.connect(reverb)
+                  .connect(reverbGain)
+                  .connect(audioContext.destination);
+
+          // Start engine hum
+          engineOsc.connect(engineGain).connect(audioContext.destination);
+          engineOsc.start();
+
+          // Enhanced road vibration effect
+          let t = 0;
+          tremoloInterval = setInterval(() => {
+            t += 0.015;
+            const baseGain = 0.92;
+            const variation = 0.08;
+            const randomFactor = 0.01 * Math.random();
+            tremoloGain.gain.value = baseGain + variation * Math.sin(t) + randomFactor;
+          }, 40);
+        } else if (mode === 'night') {
+          // Night Ambience (was Mountain): Calm lowpass filter
+          const lowpass = audioContext.createBiquadFilter();
+          lowpass.type = 'lowpass';
+          lowpass.frequency.value = 1200;
+          currentEffect = lowpass;
+          sourceNode.disconnect();
+          sourceNode.connect(lowpass).connect(audioContext.destination);
+        } else {
+          // Normal: No effect
+          sourceNode.disconnect();
+          sourceNode.connect(audioContext.destination);
+        }
+      } catch (e) {
+        console.error('Error applying vibe effect:', e);
+      }
+    }
+
+    // Play/Pause functionality
+    function togglePlayPause() {
+      if (!audio) return;
+      
+      try {
+        if (audio.paused) {
+          const playPromise = audio.play();
+          
+          if (playPromise !== undefined) {
+            playPromise.then(_ => {
+              // Playback started successfully
+              updatePlayPauseButtons(false);
+            }).catch(e => {
+              // Auto-play was prevented
+              console.error('Playback failed:', e);
+              updatePlayPauseButtons(true);
+            });
+          }
+        } else {
+          audio.pause();
+          updatePlayPauseButtons(true);
+        }
+      } catch (e) {
+        console.error('Toggle play/pause error:', e);
+      }
+    }
+    
+    function updatePlayPauseButtons(isPaused) {
+      if (playPauseBtn) {
+        playPauseBtn.innerHTML = isPaused ? 
+          '<i class="fas fa-play text-2xl"></i>' : 
+          '<i class="fas fa-pause text-2xl"></i>';
+      }
+      
+      if (desktopPlayPauseBtn) {
+        desktopPlayPauseBtn.innerHTML = isPaused ? 
+          '<i class="fas fa-play text-xs"></i>' : 
+          '<i class="fas fa-pause text-xs"></i>';
+      }
+    }
+
+    // Event listeners (check if elements exist first)
+    if (playPauseBtn) {
+      playPauseBtn.addEventListener('click', togglePlayPause);
+    }
+    
+    if (desktopPlayPauseBtn) {
+      desktopPlayPauseBtn.addEventListener('click', togglePlayPause);
+    }
+
+    // Update progress bars
+    if (audio) {
+      audio.addEventListener('timeupdate', () => {
+        try {
+          const percent = (audio.currentTime / audio.duration) * 100 || 0;
+          
+          if (progress) progress.value = percent;
+          if (currentTimeEl) currentTimeEl.textContent = formatTime(audio.currentTime);
+          if (footerCurrentTime) footerCurrentTime.textContent = formatTime(audio.currentTime);
+          if (footerProgressFill) footerProgressFill.style.width = `${percent}%`;
+        } catch (e) {
+          console.error('Progress update error:', e);
+        }
+      });
+
+      // Update duration
+      audio.addEventListener('loadedmetadata', () => {
+        try {
+          if (durationEl) durationEl.textContent = formatTime(audio.duration);
+          if (footerDuration) footerDuration.textContent = formatTime(audio.duration);
+        } catch (e) {
+          console.error('Duration update error:', e);
+        }
+      });
+      
+      // Handle errors
+      audio.addEventListener('error', (e) => {
+        console.error('Audio error:', e);
+        alert('There was an error playing the audio file. Please try again later.');
+      });
+    }
+
+    // Seek functionality
+    if (progress) {
+      progress.addEventListener('input', () => {
+        try {
+          if (!audio || isNaN(audio.duration)) return;
+          const seekTime = (progress.value / 100) * audio.duration;
+          audio.currentTime = seekTime;
+        } catch (e) {
+          console.error('Seek error:', e);
+        }
+      });
+    }
+
+    // Seek functionality for desktop progress bar
+    const progressBar = document.querySelector('.progress-bar');
+    if (progressBar) {
+      progressBar.addEventListener('mousemove', (e) => {
+        try {
+          if (e.buttons === 1 && audio && !isNaN(audio.duration)) { 
+            const clickPosition = e.clientX - progressBar.getBoundingClientRect().left;
+            const progressBarWidth = progressBar.clientWidth;
+            const seekPercent = (clickPosition / progressBarWidth) * 100;
+            const seekTime = (seekPercent / 100) * audio.duration;
+            audio.currentTime = seekTime;
+          }
+        } catch (e) {
+          console.error('Progress bar mousemove error:', e);
+        }
+      });
+      
+      progressBar.addEventListener('click', (e) => {
+        try {
+          if (!audio || isNaN(audio.duration)) return;
+          const clickPosition = e.clientX - progressBar.getBoundingClientRect().left;
+          const progressBarWidth = progressBar.clientWidth;
+          const seekPercent = (clickPosition / progressBarWidth) * 100;
+          const seekTime = (seekPercent / 100) * audio.duration;
+          audio.currentTime = seekTime;
+          
+          // Visual feedback
+          if (footerProgressFill) {
+            footerProgressFill.style.width = `${seekPercent}%`;
+          }
+        } catch (e) {
+          console.error('Progress bar click error:', e);
+        }
+      });
+    }
+
+    // Format time
+    function formatTime(seconds) {
+      if (isNaN(seconds)) return "0:00";
+      
+      const minutes = Math.floor(seconds / 60);
+      seconds = Math.floor(seconds % 60);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // Vibe Mode Panel with animations
+    function openVibePanel() {
+      try {
+        if (window.innerWidth >= 768) {
+          // Reset any animation classes first
+          if (vibePanelDesktop) {
+            vibePanelDesktop.classList.remove('active');
+            // Force reflow so animation can restart
+            void vibePanelDesktop.offsetWidth;
+            // Add active class to trigger animation
+            vibePanelDesktop.classList.add('active');
+          }
+        } else {
+          // Reset any animation classes first
+          if (vibePanelMobile) {
+            vibePanelMobile.classList.remove('active');
+            // Force reflow so animation can restart
+            void vibePanelMobile.offsetWidth;
+            // Add active class to trigger animation
+            vibePanelMobile.classList.add('active');
+          }
+        }
+        
+        // Reset overlay animation
+        if (overlay) {
+          overlay.classList.remove('active');
+          void overlay.offsetWidth;
+          overlay.classList.add('active');
+        }
+        
+        document.body.style.overflow = 'hidden';
+      } catch (e) {
+        console.error('Open vibe panel error:', e);
+      }
+    }
+
+    // Add resize event listener to handle responsive changes
+    window.addEventListener('resize', function() {
+      closeAllPanels();
+    });
+
+    // Update visibility of mode icons for desktop/mobile
+    function updateModeIconsVisibility() {
+      if (!modeIcons || modeIcons.length === 0) return;
+      
+      try {
+        modeIcons.forEach(iconEl => {
+          // Remove any hidden class that might have been added
+          iconEl.classList.remove('hidden');
+        });
+      } catch (e) {
+        console.error('Mode icons visibility update error:', e);
+      }
+    }
+
+    // Call once on page load
+    updateModeIconsVisibility();
+
+    // Add vibe mode button listeners if elements exist
+    if (vibeModeBtn) {
+      vibeModeBtn.addEventListener('click', (e) => {
+        try {
+          openVibePanel();
+          e.stopPropagation();
+        } catch (e) {
+          console.error('Vibe mode button click error:', e);
+        }
+      });
+    }
+
+    if (desktopVibeModeBtn) {
+      desktopVibeModeBtn.addEventListener('click', (e) => {
+        try {
+          openVibePanel();
+          e.stopPropagation();
+        } catch (e) {
+          console.error('Desktop vibe mode button click error:', e);
+        }
+      });
+    }
+
+    // Close buttons
+    if (closeVibeMobile) {
+      closeVibeMobile.addEventListener('click', () => {
+        closeAllPanels();
+      });
+    }
+    
+    if (closeVibeDesktop) {
+      closeVibeDesktop.addEventListener('click', () => {
+        closeAllPanels();
+      });
+    }
+
+    // Click outside to close
+    if (overlay) {
+      overlay.addEventListener('click', () => {
+        closeAllPanels();
+      });
+    }
+
+    // Function to close all panels with animation
+    function closeAllPanels() {
+      try {
+        if (vibePanelMobile) vibePanelMobile.classList.remove('active');
+        if (vibePanelDesktop) vibePanelDesktop.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+      } catch (e) {
+        console.error('Close panels error:', e);
+      }
+    }
+
+    // Vibe Mode Selection
+    if (vibeOptions && vibeOptions.length > 0) {
+      vibeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          try {
+            const mode = option.dataset.mode;
+            const icon = option.dataset.icon;
+            const wasActive = currentVibeMode === mode;
+
+            // Always play the song when changing mode
+            if (audio && audio.paused) {
+              audio.currentTime = 0;
+              const playPromise = audio.play();
+              
+              if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                  updatePlayPauseButtons(false);
+                }).catch(e => {
+                  console.error('Auto-play prevented:', e);
+                  updatePlayPauseButtons(true);
+                });
+              }
+            }
+
+            // If user taps the same mode again, just close the panel (do not revert to normal)
+            if (wasActive) {
+              closeAllPanels();
+              return;
+            } else {
+              // Deselect previous mode
+              vibeOptions.forEach(opt => opt.classList.remove('active'));
+              // Select new mode
+              currentVibeMode = mode;
+              option.classList.add('active');
+              
+              // Update mobile and desktop vibe mode button states
+              if (vibeModeBtn) vibeModeBtn.classList.add('active');
+              if (desktopVibeModeBtn) desktopVibeModeBtn.classList.add('active');
+              
+              // Update mobile icon
+              const mobileIconEl = vibeModeBtn ? vibeModeBtn.querySelector('.mode-icon') : null;
+              if (mobileIconEl) {
+                if (mode === 'normal') {
+                  mobileIconEl.className = 'fas fa-wave-square text-xl mode-icon';
+                } else {
+                  mobileIconEl.className = `fas ${icon} text-xl mode-icon active`;
+                }
+              }
+              
+              // Update desktop icon
+              const desktopIconEl = desktopVibeModeBtn ? desktopVibeModeBtn.querySelector('.mode-icon') : null;
+              if (desktopIconEl) {
+                if (mode === 'normal') {
+                  desktopIconEl.className = 'fas fa-wave-square text-xl mode-icon';
+                } else {
+                  desktopIconEl.className = `fas ${icon} text-xl mode-icon active`;
+                }
+              }
+              
+              applyVibeEffect(mode);
+            }
+            
+            // Auto-close the panel after selection
+            closeAllPanels();
+          } catch (e) {
+            console.error('Vibe mode selection error:', e);
+          }
+        });
+      });
+    }
+
+    // Initialize page - desktop view closed by default
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Wait a bit before showing the album view with animation
+        setTimeout(() => {
+          if (desktopAlbumView) {
+            desktopAlbumView.classList.add('show');
+          }
+        }, 500);
+        
+        // Simple click interaction for microphone icon
+        if (voiceControlBtn) {
+          voiceControlBtn.addEventListener('click', function() {
+            try {
+              // Visual feedback
+              this.classList.add('listening');
+              
+              setTimeout(() => {
+                this.classList.remove('listening');
+              }, 1000);
+              
+              // Toggle playback when clicking the mic icon
+              togglePlayPause();
+            } catch (e) {
+              console.error('Voice control button click error:', e);
+            }
+          });
+        }
+      } catch (e) {
+        console.error('DOMContentLoaded error:', e);
+      }
+    });
+
+    // Initialize audio context on first user interaction
+    document.body.addEventListener('click', () => {
+      try {
+        if (!audioContext) {
+          setupAudioContext();
+        }
+      } catch (e) {
+        console.error('Audio context initialization error:', e);
+      }
+    }, { once: true });
+
+    // Handle keyboard events for accessibility
+    document.addEventListener('keydown', function(e) {
+      try {
+        if (e.key === 'Escape') {
+          closeAllPanels();
+        } else if (e.key === ' ' || e.key === 'k') {
+          // Space or K to toggle play/pause
+          e.preventDefault();
+          togglePlayPause();
+        } else if (e.key === 'ArrowRight') {
+          // Right arrow to seek forward
+          if (audio) audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
+        } else if (e.key === 'ArrowLeft') {
+          // Left arrow to seek backward
+          if (audio) audio.currentTime = Math.max(0, audio.currentTime - 5);
+        } else if (e.key === 'm') {
+          // M to mute/unmute
+          if (audio) audio.muted = !audio.muted;
+        }
+      } catch (e) {
+        console.error('Keyboard event error:', e);
+      }
+    });
+  </script>
+</body>
+</html>
+
