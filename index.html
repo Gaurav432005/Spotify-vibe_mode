@@ -1,11 +1,12 @@
 <html lang="en">
+
 <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <meta name="description" content="A beautiful Spotify-like music player with immersive audio effects including 8D audio, driving mode, and night ambience."/>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+  <meta name="description" content="A beautiful Spotify-like music player with immersive audio effects including 8D audio, driving mode, and night ambience." />
   <title>Apna Bana Le Player</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Roboto:wght@400;700&display=swap');
     
@@ -16,12 +17,24 @@
       display: flex;
       flex-direction: column;
     }
-  
-    main{
+    
+    header {
+      width: 95%;
+      position: absolute;
+      top: 2rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    main {
+      position: relative;
+      display: flex;
+      justify-content: center;
       background: linear-gradient(135deg, #13455A 0%, #0a2530 100%);
       border-radius: 1rem;
       margin: 0px 10px;
     }
+    
     /* Audio Player Styles */
     .audio-player {
       background: linear-gradient(135deg, #13455A 0%, #0a2530 100%);
@@ -102,6 +115,7 @@
         transform: translateY(100%);
         opacity: 0.7;
       }
+      
       100% {
         transform: translateY(0);
         opacity: 1;
@@ -113,6 +127,7 @@
         transform: translateX(-100%);
         opacity: 0.7;
       }
+      
       100% {
         transform: translateX(0);
         opacity: 1;
@@ -143,6 +158,7 @@
       0% {
         opacity: 0;
       }
+      
       100% {
         opacity: 1;
       }
@@ -227,8 +243,10 @@
       
       .spotify-footer {
         padding: 1rem;
-        height: 6rem; /* Increased footer height for desktop */
-        background: #000; /* Black background for footer in desktop */
+        height: 6rem;
+        /* Increased footer height for desktop */
+        background: #000;
+        /* Black background for footer in desktop */
         position: fixed;
         bottom: 0;
         left: 0;
@@ -241,7 +259,8 @@
       }
       
       main {
-        margin-bottom: 6rem; /* Space for fixed footer */
+        margin-bottom: 6rem;
+        /* Space for fixed footer */
       }
     }
     
@@ -291,7 +310,8 @@
       
       main {
         background: #000;
-        margin-bottom: 4rem; /* Space for fixed footer */
+        margin-bottom: 4rem;
+        /* Space for fixed footer */
         min-height: calc(100vh - 4rem);
       }
       
@@ -303,7 +323,8 @@
       }
       
       /* Improve touch targets for mobile */
-      button, .vibe-option {
+      button,
+      .vibe-option {
         min-height: 44px;
         min-width: 44px;
       }
@@ -379,9 +400,11 @@
       0% {
         box-shadow: 0 0 0 0 rgba(29, 185, 84, 0.4);
       }
+      
       70% {
         box-shadow: 0 0 0 10px rgba(29, 185, 84, 0);
       }
+      
       100% {
         box-shadow: 0 0 0 0 rgba(29, 185, 84, 0);
       }
@@ -521,14 +544,20 @@
     }
     
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+      
+      100% {
+        transform: rotate(360deg);
+      }
     }
     
     /* Better Mobile Touch Support */
     @media (pointer: coarse) {
+
       /* For touchscreens, increase button sizes */
-      .vibe-option, 
+      .vibe-option,
       button[aria-label],
       .progress-bar {
         cursor: pointer;
@@ -545,13 +574,14 @@
     }
   </style>
 </head>
+
 <body class="min-h-screen flex flex-col">
   <!-- Loading Indicator -->
   <div id="loading-indicator" class="loading-indicator">
     <div class="loading-spinner"></div>
     <p>Loading your experience...</p>
   </div>
-
+  
   <!-- Top Spotify-like Navigation Bar -->
   <div class="spotify-top-bar flex items-center justify-between mb-2">
     <div class="flex items-center space-x-4">
@@ -586,11 +616,11 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Main Content - Audio Player -->
   <main class="flex-grow flex flex-col p-4">
     <!-- Desktop Header - Moved inside main -->
-    <header class="desktop-header flex justify-between items-center px-4 py-3 mb-4">
+    <header class="desktop-header flex justify-between items-center px-4 py-3 ">
       <div>
         <h1 class="text-white font-bold text-lg select-none">
           Apna Bana Le
@@ -614,7 +644,7 @@
         </button>
       </div>
     </header>
-
+    
     <div class="flex items-center justify-center">
       <div class="audio-player w-full max-w-sm p-6 block mobile-only">
         <header class="flex items-center justify-between text-white text-sm font-semibold mb-4">
@@ -628,10 +658,10 @@
             ...
           </button>
         </header>
-        <img alt="Album Cover - Apna Bana Le" class="w-full rounded-md mb-4 shadow-lg transform hover:scale-[1.02] transition-transform" src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'"/>
+        <img alt="Album Cover - Apna Bana Le" class="w-full rounded-md mb-4 shadow-lg transform hover:scale-[1.02] transition-transform" src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'" />
         <div class="flex items-center justify-between mb-2">
           <div>
-          
+            
           </div>
           <div class="flex items-center space-x-4">
             <button id="vibe-mode" class="vibe-mode text-gray-400 hover:text-white">
@@ -671,27 +701,26 @@
         </button>
         <audio id="audio" src="music.mp3" preload="metadata"></audio>
       </div>
-
+      
       <!-- Desktop Album View - Updated to be hidden by default -->
       <div class="desktop-only flex flex-col items-center justify-center desktop-album-view">
         <div class="rounded-xl overflow-hidden w-80 h-80 shadow-lg">
-          <img alt="Album cover - Apna Bana Le" class="w-80 h-80 object-cover" 
-               src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'"/>
+          <img alt="Album cover - Apna Bana Le" class="w-80 h-80 object-cover" src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'" />
         </div>
         <div class="text-white text-center mt-6">
-         
+          
         </div>
       </div>
     </div>
   </main>
-
+  
   <!-- Spotify-like Footer -->
   <footer class="spotify-footer text-white flex items-center px-3 py-4 select-none footer-hidden-mobile">
     <div class="flex items-center space-x-3 flex-shrink-0 md:w-1/4 w-1/3">
-      <img alt="Apna Bana Le album thumbnail" class="w-12 h-12 rounded-sm" src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'"/>
+      <img alt="Apna Bana Le album thumbnail" class="w-12 h-12 rounded-sm" src="image.jpg" loading="eager" onerror="this.src='https://i.imgur.com/3gNw3YA.jpeg'" />
       <div class="flex flex-col leading-tight min-w-0 hidden sm:block">
         <span class="font-bold text-sm truncate">Apna Bana Le</span>
-      
+        
       </div>
       <button aria-label="Favorite" class="text-gray-400 hover:text-white hidden sm:block">
         <i class="far fa-heart"></i>
@@ -735,13 +764,13 @@
       <button aria-label="Volume" class="hover:opacity-100">
         <i class="fas fa-volume-up"></i>
       </button>
-      <input aria-label="Volume slider" class="w-12 md:w-20 h-1 rounded-lg cursor-pointer accent-white hidden sm:block" max="100" min="0" type="range" value="50"/>
+      <input aria-label="Volume slider" class="w-12 md:w-20 h-1 rounded-lg cursor-pointer accent-white hidden sm:block" max="100" min="0" type="range" value="50" />
     </div>
   </footer>
-
+  
   <!-- Overlay for click outside -->
   <div id="overlay" class="overlay"></div>
-
+  
   <!-- Mobile Vibe Mode Panel -->
   <div id="vibe-panel-mobile" class="vibe-panel mobile rounded-t-2xl p-6 overflow-y-auto">
     <div class="drag-handle w-12 h-1 bg-gray-500 rounded-full mx-auto mb-4 opacity-50"></div>
@@ -790,7 +819,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Desktop Vibe Mode Panel -->
   <div id="vibe-panel-desktop" class="vibe-panel desktop p-6 overflow-y-auto">
     <div class="flex justify-between items-center mb-4">
@@ -838,7 +867,7 @@
       </div>
     </div>
   </div>
-
+  
   <script>
     const audio = document.getElementById('audio');
     const playPauseBtn = document.getElementById('play-pause');
@@ -872,7 +901,7 @@
       // Add load error handler
       audio.addEventListener('error', function(e) {
         console.error('Audio error:', e);
-        if (e.target.error && (e.target.error.code === e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED || 
+        if (e.target.error && (e.target.error.code === e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED ||
             e.target.error.code === e.target.error.MEDIA_ERR_NETWORK)) {
           // Try alternative sources if main source fails
           const fallbackSources = [
@@ -891,21 +920,21 @@
     } else {
       console.error('Audio element not found in the document');
     }
-
+    
     let currentVibeMode = null;
     let isDragging = false;
     let startX;
     let scrollLeft;
     let touchStartX;
     let touchStartY;
-
+    
     // --- Web Audio API Setup ---
     let audioContext, sourceNode, currentEffect, pannerInterval, tremoloInterval, tremoloGain;
-
+    
     function setupAudioContext() {
       if (!audioContext) {
         try {
-          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          audioContext = new(window.AudioContext || window.webkitAudioContext)();
           sourceNode = audioContext.createMediaElementSource(audio);
           sourceNode.connect(audioContext.destination); // Default connection
           
@@ -916,7 +945,7 @@
             testOsc.start(audioContext.currentTime);
             testOsc.stop(audioContext.currentTime + 0.01);
             console.log('Web Audio API working properly');
-          } catch(e) {
+          } catch (e) {
             console.warn('Web Audio API partial support:', e);
           }
           
@@ -948,7 +977,7 @@
       }
       return audioContext !== null;
     }
-
+    
     function disconnectCurrentEffect() {
       if (!audioContext || !sourceNode) return;
       
@@ -983,7 +1012,7 @@
         console.error('Error in disconnectCurrentEffect:', e);
       }
     }
-
+    
     function applyVibeEffect(mode) {
       if (!audio) return;
       
@@ -994,7 +1023,7 @@
         }
         
         disconnectCurrentEffect();
-
+        
         if (mode === '8d') {
           // 8D: Circular panning (simulate sound moving around your head)
           const panner = audioContext.createStereoPanner();
@@ -1007,7 +1036,7 @@
           try {
             sourceNode.disconnect();
             sourceNode.connect(panner).connect(gainNode).connect(audioContext.destination);
-
+            
             pannerInterval = setInterval(() => {
               t += 0.025;
               panner.pan.value = Math.sin(t * Math.PI / 3);
@@ -1026,41 +1055,41 @@
             bandpass.type = 'bandpass';
             bandpass.frequency.value = 600;
             bandpass.Q.value = 0.5;
-
+            
             // Add reverb for car cabin space
             const reverb = audioContext.createConvolver();
             const reverbGain = audioContext.createGain();
             reverbGain.gain.value = 0.15;
-
+            
             // Create engine hum using oscillator
             const engineOsc = audioContext.createOscillator();
             engineOsc.type = 'sine';
             engineOsc.frequency.value = 40;
             const engineGain = audioContext.createGain();
             engineGain.gain.value = 0.02;
-
+            
             // Road vibration tremolo
             tremoloGain = audioContext.createGain();
             tremoloGain.gain.value = 1;
-
+            
             // Connect all nodes
             currentEffect = bandpass;
             sourceNode.disconnect();
             
             // Main audio path
             sourceNode.connect(bandpass)
-                      .connect(tremoloGain)
-                      .connect(audioContext.destination);
+              .connect(tremoloGain)
+              .connect(audioContext.destination);
             
             // Parallel reverb path
             bandpass.connect(reverb)
-                    .connect(reverbGain)
-                    .connect(audioContext.destination);
-
+              .connect(reverbGain)
+              .connect(audioContext.destination);
+            
             // Start engine hum
             engineOsc.connect(engineGain).connect(audioContext.destination);
             engineOsc.start();
-
+            
             // Enhanced road vibration effect
             let t = 0;
             tremoloInterval = setInterval(() => {
@@ -1109,7 +1138,7 @@
         }
       }
     }
-
+    
     // Play/Pause functionality
     function togglePlayPause() {
       if (!audio) return;
@@ -1152,18 +1181,18 @@
     
     function updatePlayPauseButtons(isPaused) {
       if (playPauseBtn) {
-        playPauseBtn.innerHTML = isPaused ? 
-          '<i class="fas fa-play text-2xl"></i>' : 
+        playPauseBtn.innerHTML = isPaused ?
+          '<i class="fas fa-play text-2xl"></i>' :
           '<i class="fas fa-pause text-2xl"></i>';
       }
       
       if (desktopPlayPauseBtn) {
-        desktopPlayPauseBtn.innerHTML = isPaused ? 
-          '<i class="fas fa-play text-xs"></i>' : 
+        desktopPlayPauseBtn.innerHTML = isPaused ?
+          '<i class="fas fa-play text-xs"></i>' :
           '<i class="fas fa-pause text-xs"></i>';
       }
     }
-
+    
     // Event listeners (check if elements exist first)
     if (playPauseBtn) {
       playPauseBtn.addEventListener('click', togglePlayPause);
@@ -1172,7 +1201,7 @@
     if (desktopPlayPauseBtn) {
       desktopPlayPauseBtn.addEventListener('click', togglePlayPause);
     }
-
+    
     // Update progress bars
     if (audio) {
       audio.addEventListener('timeupdate', () => {
@@ -1187,7 +1216,7 @@
           console.error('Progress update error:', e);
         }
       });
-
+      
       // Update duration
       audio.addEventListener('loadedmetadata', () => {
         try {
@@ -1204,7 +1233,7 @@
         alert('There was an error playing the audio file. Please try again later.');
       });
     }
-
+    
     // Seek functionality
     if (progress) {
       progress.addEventListener('input', () => {
@@ -1217,13 +1246,13 @@
         }
       });
     }
-
+    
     // Seek functionality for desktop progress bar
     const progressBar = document.querySelector('.progress-bar');
     if (progressBar) {
       progressBar.addEventListener('mousemove', (e) => {
         try {
-          if (e.buttons === 1 && audio && !isNaN(audio.duration)) { 
+          if (e.buttons === 1 && audio && !isNaN(audio.duration)) {
             const clickPosition = e.clientX - progressBar.getBoundingClientRect().left;
             const progressBarWidth = progressBar.clientWidth;
             const seekPercent = (clickPosition / progressBarWidth) * 100;
@@ -1253,7 +1282,7 @@
         }
       });
     }
-
+    
     // Format time
     function formatTime(seconds) {
       if (isNaN(seconds)) return "0:00";
@@ -1262,7 +1291,7 @@
       seconds = Math.floor(seconds % 60);
       return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
-
+    
     // Vibe Mode Panel with animations
     function openVibePanel() {
       try {
@@ -1298,12 +1327,12 @@
         console.error('Open vibe panel error:', e);
       }
     }
-
+    
     // Add resize event listener to handle responsive changes
     window.addEventListener('resize', function() {
       closeAllPanels();
     });
-
+    
     // Update visibility of mode icons for desktop/mobile
     function updateModeIconsVisibility() {
       if (!modeIcons || modeIcons.length === 0) return;
@@ -1317,10 +1346,10 @@
         console.error('Mode icons visibility update error:', e);
       }
     }
-
+    
     // Call once on page load
     updateModeIconsVisibility();
-
+    
     // Add vibe mode button listeners if elements exist
     if (vibeModeBtn) {
       vibeModeBtn.addEventListener('click', (e) => {
@@ -1332,7 +1361,7 @@
         }
       });
     }
-
+    
     if (desktopVibeModeBtn) {
       desktopVibeModeBtn.addEventListener('click', (e) => {
         try {
@@ -1343,7 +1372,7 @@
         }
       });
     }
-
+    
     // Close buttons
     if (closeVibeMobile) {
       closeVibeMobile.addEventListener('click', () => {
@@ -1356,14 +1385,14 @@
         closeAllPanels();
       });
     }
-
+    
     // Click outside to close
     if (overlay) {
       overlay.addEventListener('click', () => {
         closeAllPanels();
       });
     }
-
+    
     // Function to close all panels with animation
     function closeAllPanels() {
       try {
@@ -1375,7 +1404,7 @@
         console.error('Close panels error:', e);
       }
     }
-
+    
     // Vibe Mode Selection
     if (vibeOptions && vibeOptions.length > 0) {
       vibeOptions.forEach(option => {
@@ -1384,7 +1413,7 @@
             const mode = option.dataset.mode;
             const icon = option.dataset.icon;
             const wasActive = currentVibeMode === mode;
-
+            
             // Always play the song when changing mode
             if (audio && audio.paused) {
               audio.currentTime = 0;
@@ -1399,7 +1428,7 @@
                 });
               }
             }
-
+            
             // If user taps the same mode again, just close the panel (do not revert to normal)
             if (wasActive) {
               closeAllPanels();
@@ -1446,7 +1475,7 @@
         });
       });
     }
-
+    
     // Initialize audio context on first user interaction
     document.body.addEventListener('click', () => {
       try {
@@ -1462,7 +1491,7 @@
         console.error('Audio context initialization error:', e);
       }
     }, { once: true });
-
+    
     // Initialize page with event listeners for controls
     document.addEventListener('DOMContentLoaded', function() {
       try {
@@ -1477,7 +1506,7 @@
             }, 500);
           }, 800);
         }
-      
+        
         // Add error handlers for images
         const albumImages = document.querySelectorAll('img[src="image.jpg"]');
         const fallbackImageUrl = 'https://i.imgur.com/3gNw3YA.jpeg'; // Default fallback image
@@ -1534,7 +1563,7 @@
         console.error('DOMContentLoaded error:', e);
       }
     });
-
+    
     // Handle keyboard events for accessibility
     document.addEventListener('keydown', function(e) {
       try {
@@ -1596,5 +1625,5 @@
     unlockAudioContext();
   </script>
 </body>
-</html>
 
+</html>
