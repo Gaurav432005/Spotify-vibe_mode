@@ -23,15 +23,15 @@ Choose a VibeMode (8D, Driving, or Night).
 Enjoy the transformed audio experience right from your browser.
 
 🌐 Website Preview
-You can try it out here: [Your Deployment URL]
+You can try it out here: spotify-vibe-mode.vercel.app
 (Currently supports modern browsers and desktop playback only.)
 
 🛠 Tech Stack
-HTML5 / CSS3
+HTML5 
+
+CSS3
 
 JavaScript
-
-Spotify Web API
 
 Web Audio API – Used to dynamically convert music into immersive experiences like 8D Audio, Driving Mode, and Night Ambience through spatial effects, filters, and real-time audio processing.
 
